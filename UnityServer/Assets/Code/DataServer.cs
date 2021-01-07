@@ -7,15 +7,18 @@ using System.Text;
 
 public class NewBehaviourScript : MonoBehaviour
 {
-    public byte[] data = new byte[1024];
-    public IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 44444);
-    private IPEndPoint ip;
-    private UdpClient udpClient;
+    private TcpListener server;
+    private StreamReader reader;    
 
     void Start()
     {
-        ip = new IPEndPoint(IPAddress.Any, 44444);
-        udpClient = new UdpClient(ipep);
+        server = new TcpListener(IPAddress.Parse("192.188.4.10"), 1338);
+        server.Start();
+        new Thread(() => {
+            TcpClient client = server.AcceptTcpClient();
+            NetworkStream stream = client.GetStream()
+            reader = new StreamReader(stream);
+        }).Start();
     }
 
     void Update()
@@ -23,14 +26,8 @@ public class NewBehaviourScript : MonoBehaviour
         Data();
     }
 
-    public byte[] Data()
+    public string GetData()
     {
-        IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-
-        while (true)
-        {
-            data = udpClient.Receive(ref sender);
-            System.Console.WriteLine(Encoding.ASCII.GetString(data, 0, data.Length));
-        }
+        return reader.ReadLine();
     }
 }
